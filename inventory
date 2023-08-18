@@ -23,7 +23,7 @@ all:
     shortname: "lab" # Sub-domain
     domain: "{{ shortname }}.{{ root_domain }}" # Full domain name
     third: "x" # Third octect of subnet used.
-    user_password: "Redhat123!" # test user password
+    user_password: "<password>" # test user password
 ## DNS variables
 ### IdM DNS
     idm_pri: "idm.{{ domain }}"
@@ -39,8 +39,8 @@ all:
     ad_grp_admins: "ad-idm-admins"
     ad_grp_users: "ad-idm-users"
     ad_idm_admins: # AD enterprise admin name, needed for AD Trust creation
-      - { ad_name: user2_ad, ad_first: Mike, ad_last: Ralph }
-      - { ad_name: user1_ad, ad_first: Amy, ad_last: Farley }
+      - { ad_name: user2_ad, ad_first: User, ad_last: AD2 }
+      - { ad_name: user1_ad, ad_first: User, ad_last: AD1 }
     ad_idm_users: # test users
       - { ad_name: aduser1, ad_first: AD, ad_last: User1 }
       - { ad_name: aduser2, ad_first: AD, ad_last: User2 }
@@ -77,7 +77,7 @@ all:
       - { idm_name: sbronte, idm_first: Sammy, idm_last: Bronte, id: 10003, ipa_group: idm-users }
     idm_admins: # IdM admins name
       - { idm_name: user2_idm, idm_first: User, idm_last: idm2, ipa_group: idm-admins }
-      - { idm_name: user1_idm, idm_first: User, idm_last: idm2, ipa_group: idm-admins }
+      - { idm_name: user1_idm, idm_first: User, idm_last: idm1, ipa_group: idm-admins }
 ## IdM Group creation
     ad_ext_groups:
       - { ext_group: ad_grp_users, int_group: ad-users, ipa_group: idm-users }
