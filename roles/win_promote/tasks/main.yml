@@ -1,0 +1,13 @@
+---
+# tasks file for winCreate
+- name: Promote to DC
+  ansible.windows.win_domain:
+    dns_domain_name: "{{ root_domain }}"
+    domain_netbios_name: "{{ ad_netbios }}"
+    domain_admin_user: Administrator@{{ root_domain }}
+    domain_admin_password: "{{ admin_password }}"
+    safe_mode_password: "{{ admin_password }}"
+    create_dns_delegation: false
+    state: domain_controller
+- name: Reboot the machine with all defaults
+  ansible.windows.win_reboot:

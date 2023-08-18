@@ -1,0 +1,21 @@
+---
+# tasks file for idm-users
+- name: IdM test user creation
+  ipauser:
+    ipaadmin_password: "{{ admin_password }}"
+    name: user{{ item }}
+    first: User
+    last: Test-{{ item }}
+    uid: "{{ item }}"
+    gid: "{{ item }}"
+    password: "{{ user_password }}"
+    update_password: on_create
+  with_sequence: start={{ first_users }} end={{ last_users }}
+- name: IdM admin users
+  ipauser:
+    ipaadmin_password: "{{ admin_password }}"
+    name: "{{ item.idm_name }}"
+    first: "{{ item.idm_first }}"
+    last: "{{ item.idm_last }}"
+    password: "{{ admin_password }}"
+  with_items: "{{ idm_users }}"

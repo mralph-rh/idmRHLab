@@ -1,0 +1,37 @@
+---
+# tasks file for subscribe-cdn
+- name: Subscribe to CDN Satellite
+  community.general.redhat_subscription:
+    state: present
+    username: "{{ satCDN_user }}"
+    password: "{{ satCDN_passwd }}"
+- name: Disable all repositories
+  community.general.rhsm_repository:
+    name: '*'
+    state: disabled
+- name: Enable RHEL 7 repositories
+  community.general.rhsm_repository:
+    name: rhel-7-server-rpms
+    state: enabled
+  when: ansible_facts['distribution_major_version'] == "7"
+- name: Enable RHEL 8 repositories
+  community.general.rhsm_repository:
+    name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
+    state: enabled
+  when: ansible_facts['distribution_major_version'] == "8"
+- name: Install Cockpit on RHEL 7
+  ansible.builtin.package:
+    name: cockpit
+    state: present
+  when: ansible_facts['distribution_major_version'] == "7"
+- name: Start Cockpit
+  ansible.builtin.systemd:
+    name: cockpit.socket
+    enabled: true
+- name: Patch to the latest version
+  ansible.builtin.package:
+    name: "*"
+    state: latest
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 120

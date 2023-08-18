@@ -1,0 +1,20 @@
+---
+# tasks file for idm-users
+- name: IdM user
+  ipauser:
+    ipaadmin_password: "{{ admin_password }}"
+    name: "{{ item.idm_name }}"
+    first: "{{ item.idm_first }}"
+    last: "{{ item.idm_last }}"
+    uid: "{{ item.id }}"
+    gid: "{{ item.id }}"
+    password: "{{ user_password }}"
+  with_items: "{{ idm_users }}"
+- name: IdM admins
+  ipauser:
+    ipaadmin_password: "{{ admin_password }}"
+    name: "{{ item.idm_name }}"
+    first: "{{ item.idm_first }}"
+    last: "{{ item.idm_last }}"
+    password: "{{ admin_password }}"
+  with_items: "{{ idm_admins }}"

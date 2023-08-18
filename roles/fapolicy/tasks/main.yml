@@ -1,0 +1,23 @@
+---
+- name: Copy fapolicy rule for RHEL 8
+  ansible.builtin.copy:
+    src: files/31-rh8-idm.rules
+    dest: /etc/fapolicyd/rules.d/31-idm.rules
+    owner: root
+    group: fapolicyd
+    mode: '0644'
+    setype: fapolicyd_config_t
+  when: ansible_facts['distribution_major_version'] == "8"
+- name: Copy fapolicy rule for RHEL 8
+  ansible.builtin.copy:
+    src: files/31-rh9-idm.rules
+    dest: /etc/fapolicyd/rules.d/31-idm.rules
+    owner: root
+    group: fapolicyd
+    mode: '0644'
+    setype: fapolicyd_config_t
+  when: ansible_facts['distribution_major_version'] == "9"
+- name: Reload fapolicyd
+  ansible.builtin.systemd:
+    name: fapolicyd
+    state: restarted

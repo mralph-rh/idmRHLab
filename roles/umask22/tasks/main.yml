@@ -1,0 +1,9 @@
+---
+- name: Change umask to 022
+  ansible.builtin.lineinfile:
+    path: "{{ item }}"
+    regexp: '^umask 077'
+    line: umask 022
+  with_items:
+    - /etc/profile
+    - /etc/bashrc

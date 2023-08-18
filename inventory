@@ -1,0 +1,118 @@
+all:
+  children:
+    win:
+      hosts:
+        winlab8.example.com:
+          ansible_connection: winrm
+          ansible_winrm_server_cert_validation: ignore
+          ansible_user: Administrator
+          ansible_password: "{{ admin_password }}"
+    ipaserver:      
+      hosts: 
+        idm.{{ shortname }}.example.com:
+    ipareplicas:
+      hosts: 
+        rep.{{ shortname }}.example.com:
+    ipaclients:
+      hosts: 
+        client.{{ shortname }}.example.com:
+  vars:
+# Global variables
+    admin_password: '<password>' # Administrator password used for all applications
+    root_domain: "example.com" # Root domain (also used as Windows domain)
+    shortname: "lab" # Sub-domain
+    domain: "{{ shortname }}.{{ root_domain }}" # Full domain name
+    third: "x" # Third octect of subnet used.
+    user_password: "Redhat123!" # test user password
+## DNS variables
+### IdM DNS
+    idm_pri: "idm.{{ domain }}"
+    idm_DNS1: "192.168.{{ third }}.x" # primary IdM IP address
+#### The below lines are not needed if you are only running a single IdM server.    
+    idm_rep: "rep.{{ domain }}"
+    idm_DNS2: "192.168.{{ third }}.y" # replica IdM IP address
+### Windows DNS
+    ad_ip: "192.168.{{ third }}.z" # AD IP
+# Windows variables
+    ad_netbios: "EXAMPLE"
+## AD Enterprise User/Group Creation
+    ad_grp_admins: "ad-idm-admins"
+    ad_grp_users: "ad-idm-users"
+    ad_idm_admins: # AD enterprise admin name, needed for AD Trust creation
+      - { ad_name: user2_ad, ad_first: Mike, ad_last: Ralph }
+      - { ad_name: user1_ad, ad_first: Amy, ad_last: Farley }
+    ad_idm_users: # test users
+      - { ad_name: aduser1, ad_first: AD, ad_last: User1 }
+      - { ad_name: aduser2, ad_first: AD, ad_last: User2 }
+      - { ad_name: aduser3, ad_first: AD, ad_last: User3 }
+    ad_admin: "Administrator" # AD administrator name
+    ad_admin_password: "{{ admin_password }}" # AD administrator password
+# IdM variables
+    ipaserver_domain: "{{ domain }}"
+    ipaserver_realm: "{{ domain | upper }}"
+    ipaserver_setup_dns: true
+    ipaserver_setup_adtrust: true
+    ipaserver_reverse_zones: "{{ third }}.168.192.in-addr.arpa"
+    ipaserver_allow_zone_overlap: true
+    ipaserver_no_forwarders: true
+    ipaserver_no_dnssec_validation: true
+    ipaserver_netbios_name: "{{ shortname | upper }}"
+    ipaserver_firewalld_zone: public
+    ipareplica_no_forwarders: true
+    ipareplica_setup_adtrust: true
+    ipareplica_no_dnssec_validation: true
+    ipareplica_setup_ca: true
+    ipareplica_setup_dns: true
+    ipareplica_firewalld_zone: public
+    ipaclient_mkhomedir: true
+    ipaclient_request_cert: true
+## IdM password variables, do not use same one for Prod/Dev. Same only for demo/POC
+    ipaadmin_password: "{{ admin_password }}" # IdM admin password
+    ipadm_password: "{{ admin_password }}" # IdM directory manager password
+    ipasmartcard_server_ca_certs: "/etc/ipa/ca.crt" # Used for enabling smartcards
+## IdM User Creation
+    idm_users: # IPA users
+      - { idm_name: dauston, idm_first: Duncan, idm_last: Auston, id: 10001, ipa_group: idm-users }
+      - { idm_name: anadine, idm_first: Angie, idm_last: Nadine, id: 10002, ipa_group: idm-users }
+      - { idm_name: sbronte, idm_first: Sammy, idm_last: Bronte, id: 10003, ipa_group: idm-users }
+    idm_admins: # IdM admins name
+      - { idm_name: user2_idm, idm_first: User, idm_last: idm2, ipa_group: idm-admins }
+      - { idm_name: user1_idm, idm_first: User, idm_last: idm2, ipa_group: idm-admins }
+## IdM Group creation
+    ad_ext_groups:
+      - { ext_group: ad_grp_users, int_group: ad-users, ipa_group: idm-users }
+      - { ext_group: ad_grp_admins, int_group: ad-admins, ipa_group: idm-admins }
+    idm_groups:
+      - { ipa_group: idm-users, ipa_grpDescription: "IdM users group" }
+      - { ipa_group: idm-admins, ipa_grpDescription: "IdM administrators group" }
+    idm_host_group: "ipa_clients" # hostgroup name
+    idm_locations:
+      - { location: raleigh, desc: "Raleigh, NC 27601, US", server: "idm.{{ domain }}" }
+      - { location: dublin, desc: "Dublin, Dublin D01 V4A3, IE", server: "rep.{{ domain }}" }
+# RHEL variables
+    network_connections:
+    - name: "{{ ansible_default_ipv4.alias }}"
+      state: up
+      type: ethernet
+      persistent_state: present
+      ip:
+        dhcp4: false
+        dns: "{{ idm_DNS1 }}"
+        address: "{{ ansible_default_ipv4.address }}/24"
+        gateway4: "{{ ansible_default_ipv4.gateway }}"
+## Crypto policy used: non-FIPS = DEFAULT, FIPS = FIPS, FIPS on RHEL 8 w/AD Trust = FIPS:AD-SUPPORT, FIPS on RHEL 9 w/AD Trust = FIPS:AD-SUPPORT-LEGACY
+    crypto: "DEFAULT"
+## Local user creation if needed
+    local_user: 'lcluser2' # UID for local user created during initial build of system, also used for SSO GUI login
+    ssh_key: '<ssh path>' # Location of the ssh key to be used for the local user
+    addlocal_user:
+      - { luser_name: 'lcluser1', luser_full: 'Local User1', luser_pass: '<hashed password>' }
+## Satellite info
+    sat_ip: '' # Satellite IP
+    satellite: '' # Satellite fqdn
+    satKey7: '' # Activation key for RHEL 7 servers
+    satKey8: '' # Activation key for RHEL 8 servers
+    satKey9: '' # Activation key for RHEL 9 servers
+    satCDN_user: '' # customer portal account username if using the CDN to register and update the servers
+    satCDN_passwd: '' # customer portal account pasword if using the CDN to register and update the servers
+

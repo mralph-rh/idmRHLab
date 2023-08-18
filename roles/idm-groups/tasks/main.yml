@@ -1,0 +1,67 @@
+---
+# tasks file for idm-ad-groups
+# Creates external groups for both the AD users IdM group and athe AD admins IdM group
+- name: Create External Group for AD users group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: ext-adusergrp
+    description: "External group for AD Users"
+    external: true
+    externalmember:
+      - '{{ ad_grp_users }}@{{ root_domain }}'
+    state: present
+- name: Create External Group for AD admins group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: ext-adusergrp
+    description: "External group for AD Users"
+    external: true
+    externalmember:
+      - '{{ ad_grp_admins }}@{{ root_domain }}'
+    state: present
+- name: Create Internal group for External AD users group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: int-adusergrp
+    description: "Internal group for External AD users  group"
+    group:
+      - ext-adusergrp
+    state: present
+- name: Create Internal group for External AD admins group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: int-adusergrp
+    description: "Internal group for External AD users  group"
+    group:
+      - ext-adusergrp
+    state: present
+# Creates an IdM group for IdM Admins
+- name: Create IdM admins group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: idm-admins
+    description: "IdM group for admins"
+    state: present
+- name: Added users to IdM admins group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: idm-admins
+    action: member
+    user:
+      - "{{ item.idm_name }}"
+  with_items: "{{ idm_admins }}"
+# Creates an IdM group for IdM Users
+- name: Create IdM users group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: idm-users
+    description: "IdM group for admins"
+    state: present
+- name: Added users to IdM user group
+  ipagroup:
+    ipaadmin_password: "{{ admin_password }}"
+    name: idm-users
+    action: member
+    user:
+      - "{{ item.idm_name }}"
+  with_items: "{{ idm_users }}"

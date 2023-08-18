@@ -1,0 +1,2 @@
+allow perm=open dir=/usr/lib/jvm/ : dir=/var/lib/pki/pki-tomcat/work/Catalina/localhost/   
+allow perm=open exe=/usr/bin/python3.9 : all ftype=text/x-python trust=0
