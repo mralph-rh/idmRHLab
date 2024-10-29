@@ -4,9 +4,6 @@
   ansible.windows.win_service_info:
     name: sshd
   register: sshd_status
-#- name: Show output
-#  ansible.builtin.debug:
-#    msg: "{{ sshd_status }}"
 - name: Promote to DC
   microsoft.ad.domain:
     dns_domain_name: "{{ root_domain }}"
