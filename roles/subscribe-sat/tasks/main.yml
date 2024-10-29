@@ -4,26 +4,26 @@
   ansible.builtin.lineinfile:
     path: /etc/hosts
     line: '{{ sat_ip }}  {{ satellite }}'
-#    create: true
+    create: true
 - name: Install katello-ca
   ansible.builtin.dnf:
     name: "http://{{ satellite }}/pub/katello-ca-consumer-latest.noarch.rpm"
     disable_gpg_check: true
     state: present
 - name: Subscribe RHEL 7 servers
-  community.general.redhat_subscription:
+  redhat.rhel_system_roles.redhat_subscription:
     state: present
     activationkey: '{{ satKey7 }}'
     org_id: 'Red_Hat'
   when: ansible_facts['distribution_major_version'] == "7"
 - name: Subscribe RHEL 8 servers
-  community.general.redhat_subscription:
+  redhat.rhel_system_roles.redhat_subscription:
     state: present
     activationkey: '{{ satKey8 }}'
     org_id: 'Red_Hat'
   when: ansible_facts['distribution_major_version'] == "8"
 - name: Subscribe RHEL 9 servers
-  community.general.redhat_subscription:
+  redhat.rhel_system_roles.redhat_subscription:
     state: present
     activationkey: '{{ satKey9 }}'
     org_id: 'Red_Hat'
@@ -37,7 +37,7 @@
   ansible.builtin.systemd:
     name: cockpit.socket
     enabled: true
-- name: Patch to the latest version
+- name: Update to latest
   ansible.builtin.package:
     name: "*"
     state: latest

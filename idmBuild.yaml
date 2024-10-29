@@ -7,9 +7,7 @@
   become_user: Administrator
   become: false
   roles:
-    - role: win_promote # Converts Windows server into domain controller
-      state: present
-    - role: win_users # Creates Window users and groups
+    - role: winPromote # Converts Windows server into domain controller and adds users and groups
       state: present
   tags: win1
 - name: Configure Windows pt 2
@@ -21,6 +19,21 @@
     - role: win_delegate # Delegates sub-domain to IdM
       state: present
   tags: win2
+## Need to choose which method to update systems with.
+- name: Subscribe systems to RH CDN
+  hosts: ipaserver:ipareplicas
+  become: true
+  roles:
+    - role: subscribe-cdn # Registers RHEL systems to the Red Hat CDN
+  tags:
+    - cdn
+    - never
+- name: Subscribe systems to local satellite
+  hosts: all:!win
+  become: true
+  roles:
+    - role: subscribe-sat # Registers RHEL systems to local Satellite
+  tags: sat
 # OS section
 - name: Add local linux users
   hosts: all:!win
@@ -33,31 +46,14 @@
   roles:
     - role: update_hosts # Adds local hostname to /etc/hosts file
   tags: confHosts
-- name: Ensure sssd.conf has correct permissions
-  hosts: ipaserver:ipareplicas
-  roles:
-    - role: sssdConfig
-  tags: stig
-## Need to choose which method to update systems with.
-- name: Subscribe systems to RH CDN
-  hosts: ipaserver:ipareplicas
-  roles:
-    - role: subscribe-cdn # Registers RHEL systems to the Red Hat CDN
-  tags:
-    - cdn
-    - never
-- name: Subscribe systems to local satellite
-  hosts: all:!win
-  roles:
-    - role: subscribe-sat # Registers RHEL systems to local Satellite
-  tags: sat
 - name: Update nameserver entry on ipareplcas and ipaclients
-  hosts: all:!ipaserver:!win:!others
+  hosts: ipareplicas:ipaclients
   roles:
     - role: rhel-system-roles.network # Changes IdM clients DNS to point to IdM server for resolution
   tags: network
 - name: Update Crypto for AD-Trust
   hosts: ipaserver:ipareplicas
+  become: true
   roles:
     - role: redhat.rhel_system_roles.crypto_policies # Updates crypto policy
       vars:
@@ -65,62 +61,55 @@
         crypto_policies_reboot_required: true
   tags:
     - crypto
-# IdM install
-## Changes umask for installation
-- name: Set umask for IdM installation
-  hosts: all:!win
+    - never
+- name: Installs the IdM server
+  hosts: ipaserver
+  roles:
+    - role: redhat.rhel_idm.ipaserver
+  tags: server
+- name: Set umask on replicas and clients
+  hosts: ipareplicas:ipaclients
+  become: true
   roles:
     - role: umask22
   tags:
     - stig
-- name: Installs the IdM server
-#  hosts: ipaserver
-  ansible.builtin.import_playbook: /usr/share/doc/ansible-freeipa/playbooks/install-server.yml
-#  roles:
-#    - role: ipaserver
-  tags: server
+    - never
 - name: Turn IdM DNS PTR Sync on
   hosts: ipaserver
-  become: false
   roles:
     - role: idm-dns_ptr
   tags: server
 - name: Installs the IdM replicas
-#  hosts: ipareplicas
-  ansible.builtin.import_playbook: /usr/share/doc/ansible-freeipa/playbooks/install-replica.yml
-#  roles:
-#    -role: ipareplica
+  hosts: ipareplicas
+  roles:
+    - role: redhat.rhel_idm.ipareplica
   tags: replicas
 - name: Installs the IdM clients
-# import_playbook: /usr/share/doc/ansible-freeipa/playbooks/install-client.yml
-  hosts: ipaclients
+  hosts: ipaclients,ipareplicas
   roles:
     - role: redhat.rhel_idm.ipaclient
   tags: clients
-## Undue umask changes
 - name: Revert umask back on replicas and clients
-  hosts: ipareplicas:ipaserver
+  hosts: ipareplicas:ipaclientss
+  become: true
   roles:
     - role: umask77
   tags:
     - stig
-# Enable Smartcard support
-- name: Generate scripts for smartcard - server
-  hosts: ipaserver,ipareplicas
-  roles:
-    - role: redhat.rhel_idm.ipasmartcard_server
-  tags: smartcard
-- name: Generate scripts for smartcard - client
-  hosts: ipaclients
-  roles:
-    - role: redhat.rhel_idm.ipasmartcard_client
-  tags: smartcard
+    - never
 # IdM configuration
 - name: Sets up the AD trust.
-  hosts: ipaserver:ipareplicas
+  hosts: ipaserver
   roles:
     - role: idm-dns_ad_setup
   tags: adtrust
+- name: Setup IDP
+  hosts: ipaserver
+  roles:
+    - role: idm-idp
+  tags:
+    - idp
 - name: Create IdM users
   hosts: ipaserver
   roles:
@@ -131,6 +120,11 @@
   roles:
     - role: idm-groups
   tags: idmGrps
+- name: Set default shell
+  hosts: ipaserver
+  roles:
+    - role: idm-defaults
+  tags: defaults
 - name: Create client host group
   hosts: ipaserver
   become: false
@@ -154,9 +148,3 @@
   roles:
     - role: idm-sudo
   tags: sudo
-- name: Set IdM locations
-  hosts: ipaserver
-  become: false
-  roles:
-    - role: idm-locations
-  tags: locations

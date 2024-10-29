@@ -1,0 +1,5 @@
+---
+- name: Enable ACME service in IDM
+  ansible.builtin.command: /sbin/ipa-acme-manage enable
+- name: Setup ACME pruning cron job
+  ansible.builtin.command: /sbin/ipa-acme-manage pruning --enable --cron "0 0 1 * *"

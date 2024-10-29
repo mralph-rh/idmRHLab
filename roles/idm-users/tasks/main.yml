@@ -1,7 +1,7 @@
 ---
 # tasks file for idm-users
 - name: IdM user
-  ipauser:
+  redhat.rhel_idm.ipauser:
     ipaadmin_password: "{{ admin_password }}"
     name: "{{ item.idm_name }}"
     first: "{{ item.idm_first }}"
@@ -11,10 +11,20 @@
     password: "{{ user_password }}"
   with_items: "{{ idm_users }}"
 - name: IdM admins
-  ipauser:
+  redhat.rhel_idm.ipauser:
     ipaadmin_password: "{{ admin_password }}"
     name: "{{ item.idm_name }}"
     first: "{{ item.idm_first }}"
     last: "{{ item.idm_last }}"
     password: "{{ admin_password }}"
   with_items: "{{ idm_admins }}"
+- name: IDP admins
+  redhat.rhel_idm.ipauser:
+    ipaadmin_password: "{{ admin_password }}"
+    name: "{{ item.idm_name }}"
+    first: "{{ item.idm_first }}"
+    last: "{{ item.idm_last }}"
+    idp: "{{ item.idp_ref }}"
+    idp_user_id: "{{ item.idp_name }}"
+    userauthtype: "{{ item.authtype }}"
+  with_items: "{{ idp_admins }}"

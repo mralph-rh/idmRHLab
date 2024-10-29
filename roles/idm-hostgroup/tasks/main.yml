@@ -1,9 +1,13 @@
 ---
 # tasks file for idm-hostgroup
+- name: Set variable with hosts from the ipaclients group, used due to a variable in the host name.
+  set_fact:
+    ipaclients_list: "{{ groups['ipaclients'] }}"
 - name: Create hostsgroup for clients
-  ipahostgroup:
+  become_method: sudo
+  redhat.rhel_idm.ipahostgroup:
     ipaadmin_password: "{{ admin_password }}"
     name: "{{ idm_host_group }}"
     description: "Client servers"
-    host:
-      - "{{ inventory_hostname }}"
+    host: "{{ item }}"
+  with_items: "{{ ipaclients_list }}"

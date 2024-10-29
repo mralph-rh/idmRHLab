@@ -2,45 +2,47 @@ all:
   children:
     win:
       hosts:
-        winlab8.example.com:
-          ansible_connection: winrm
-          ansible_winrm_server_cert_validation: ignore
+        windemo.{{ root_domain }}:
+#          ansible_connection: winrm
+#          ansible_winrm_server_cert_validation: ignore
+          ansible_connection: ssh  # if you use ssh, uncomment this and comment out winrm
+          ansible_shell_type: cmd  # use either cmd or powershell depending on your default shell in windows.
           ansible_user: Administrator
-          ansible_password: "{{ admin_password }}"
+          ansible_password: "{{ ad_admin_password }}"
     ipaserver:      
       hosts: 
-        idm.{{ shortname }}.example.com:
+        idm.{{ domain }}:
     ipareplicas:
       hosts: 
-        rep.{{ shortname }}.example.com:
+        rep.{{ domain }}:
     ipaclients:
       hosts: 
-        client.{{ shortname }}.example.com:
+        client.{{ domain }}:
   vars:
 # Global variables
-    admin_password: '<password>' # Administrator password used for all applications
     root_domain: "example.com" # Root domain (also used as Windows domain)
-    shortname: "lab" # Sub-domain
+    shortname: "demo9" # Sub-domain
     domain: "{{ shortname }}.{{ root_domain }}" # Full domain name
     third: "x" # Third octect of subnet used.
-    user_password: "<password>" # test user password
+    idmpri_ip: 192.168.{{ third }}.xx
+    idmrep_ip: 192.168.{{ third }}.xy
 ## DNS variables
-### IdM DNS
-    idm_pri: "idm.{{ domain }}"
-    idm_DNS1: "192.168.{{ third }}.x" # primary IdM IP address
-#### The below lines are not needed if you are only running a single IdM server.    
-    idm_rep: "rep.{{ domain }}"
-    idm_DNS2: "192.168.{{ third }}.y" # replica IdM IP address
+# IdM DNS
+    idm_dns:
+      - { idm_srv: "idm.{{ domain }}", idm_ip: "{{ idmpri_ip }}" }
+      - { idm_srv: "rep.{{ domain }}", idm_ip: "{{ idmrep_ip }}" }
 ### Windows DNS
-    ad_ip: "192.168.{{ third }}.z" # AD IP
+    ad_ip: "192.168.{{ third }}.xz" # AD IP
 # Windows variables
+## Domain
     ad_netbios: "EXAMPLE"
 ## AD Enterprise User/Group Creation
-    ad_grp_admins: "ad-idm-admins"
-    ad_grp_users: "ad-idm-users"
+    ad_groups:
+      - { ad_group: ad-idm-users, ipa_ad_grp: idm_ad_users, ad_grpDesc: "IdM external group for AD users", idm_ad_grpDesc: "IdM internal group for AD users" }
+      - { ad_group: ad-idm-admins, ipa_ad_grp: idm_ad_admins, ad_grpDesc: "IdM external group for AD admins", idm_ad_grpDesc: "IdM internal group for AD admins" }
     ad_idm_admins: # AD enterprise admin name, needed for AD Trust creation
-      - { ad_name: user2_ad, ad_first: User, ad_last: AD2 }
-      - { ad_name: user1_ad, ad_first: User, ad_last: AD1 }
+      - { ad_name: localuser1_ad, ad_first: Local, ad_last: User1 }
+      - { ad_name: localuser2_ad, ad_first: Local, ad_last: User2 }
     ad_idm_users: # test users
       - { ad_name: aduser1, ad_first: AD, ad_last: User1 }
       - { ad_name: aduser2, ad_first: AD, ad_last: User2 }
@@ -48,6 +50,7 @@ all:
     ad_admin: "Administrator" # AD administrator name
     ad_admin_password: "{{ admin_password }}" # AD administrator password
 # IdM variables
+## IPA Server
     ipaserver_domain: "{{ domain }}"
     ipaserver_realm: "{{ domain | upper }}"
     ipaserver_setup_dns: true
@@ -56,16 +59,18 @@ all:
     ipaserver_allow_zone_overlap: true
     ipaserver_no_forwarders: true
     ipaserver_no_dnssec_validation: true
+    ipaserver_random_serial_numbers: true
     ipaserver_netbios_name: "{{ shortname | upper }}"
     ipaserver_firewalld_zone: public
+## IPA Replica
     ipareplica_no_forwarders: true
     ipareplica_setup_adtrust: true
     ipareplica_no_dnssec_validation: true
-    ipareplica_setup_ca: true
+    ipareplica_setup_ca: false
     ipareplica_setup_dns: true
     ipareplica_firewalld_zone: public
+## IPA Client
     ipaclient_mkhomedir: true
-    ipaclient_request_cert: true
 ## IdM password variables, do not use same one for Prod/Dev. Same only for demo/POC
     ipaadmin_password: "{{ admin_password }}" # IdM admin password
     ipadm_password: "{{ admin_password }}" # IdM directory manager password
@@ -75,20 +80,21 @@ all:
       - { idm_name: dauston, idm_first: Duncan, idm_last: Auston, id: 10001, ipa_group: idm-users }
       - { idm_name: anadine, idm_first: Angie, idm_last: Nadine, id: 10002, ipa_group: idm-users }
       - { idm_name: sbronte, idm_first: Sammy, idm_last: Bronte, id: 10003, ipa_group: idm-users }
-    idm_admins: # IdM admins name
-      - { idm_name: user2_idm, idm_first: User, idm_last: idm2, ipa_group: idm-admins }
-      - { idm_name: user1_idm, idm_first: User, idm_last: idm1, ipa_group: idm-admins }
+    idm_admins: # IdM admins
+      - { idm_name: localuser1_idm, idm_first: Local, idm_last: User1, ipa_group: idm-admins }
+      - { idm_name: localuser2_idm, idm_first: Local, idm_last: User2, ipa_group: idm-admins }
+    idp_admins: # IDP admins
+      - { idm_name: localuser1_azure, idm_first: Local, idm_last: User1, ipa_group: idm-admins, idp_ref: "Entra ID(Azure AD)", idp_name: "localuser11@redhat.com", authtype: idp }
+      - { idm_name: localuser2_azure, idm_first: Local, idm_last: User2, ipa_group: idm-admins, idp_ref: "Entra ID(Azure AD)", idp_name: "localuser2@redhat.com", authtype: idp }
+      - { idm_name: localuser1_iam, idm_first: Local, idm_last: User1, ipa_group: idm-admins, idp_ref: "IAM-SIG", idp_name: "Local User1", authtype: idp }
+      - { idm_name: localuser2_iam, idm_first: Local, idm_last: User2, ipa_group: idm-admins, idp_ref: "IAM-SIG", idp_name: "Local User2", authtype: idp }
 ## IdM Group creation
-    ad_ext_groups:
-      - { ext_group: ad_grp_users, int_group: ad-users, ipa_group: idm-users }
-      - { ext_group: ad_grp_admins, int_group: ad-admins, ipa_group: idm-admins }
     idm_groups:
-      - { ipa_group: idm-users, ipa_grpDescription: "IdM users group" }
-      - { ipa_group: idm-admins, ipa_grpDescription: "IdM administrators group" }
+      - { ipa_group: "idm-users", ipa_grpDesc: "IdM users group" }
+      - { ipa_group: "idm-admins", ipa_grpDesc: "IdM administrators group" }
     idm_host_group: "ipa_clients" # hostgroup name
-    idm_locations:
-      - { location: raleigh, desc: "Raleigh, NC 27601, US", server: "idm.{{ domain }}" }
-      - { location: dublin, desc: "Dublin, Dublin D01 V4A3, IE", server: "rep.{{ domain }}" }
+## IdM Defaults
+    idm_shell: "/bin/bash"
 # RHEL variables
     network_connections:
     - name: "{{ ansible_default_ipv4.alias }}"
@@ -97,22 +103,21 @@ all:
       persistent_state: present
       ip:
         dhcp4: false
-        dns: "{{ idm_DNS1 }}"
+        dns: "{{ idm_dns[0].idm_ip }}"
         address: "{{ ansible_default_ipv4.address }}/24"
         gateway4: "{{ ansible_default_ipv4.gateway }}"
 ## Crypto policy used: non-FIPS = DEFAULT, FIPS = FIPS, FIPS on RHEL 8 w/AD Trust = FIPS:AD-SUPPORT, FIPS on RHEL 9 w/AD Trust = FIPS:AD-SUPPORT-LEGACY
-    crypto: "DEFAULT"
+    crypto: "FIPS:AD-SUPPORT-LEGACY"
 ## Local user creation if needed
-    local_user: 'lcluser2' # UID for local user created during initial build of system, also used for SSO GUI login
-    ssh_key: '<ssh path>' # Location of the ssh key to be used for the local user
+    local_user: 'localuser1' # UID for local user created during initial build of system, also used for SSO GUI login
+    ssh_key: '/home/localuser1/.ssh/id_rsa.pub' # Location of the ssh key to be used for the local user
     addlocal_user:
-      - { luser_name: 'lcluser1', luser_full: 'Local User1', luser_pass: '<hashed password>' }
-## Satellite info
+      - { luser_name: 'localuser2', luser_full: 'Local User2', luser_pass: '<hashed password>' }
+## Satellite Info
     sat_ip: '' # Satellite IP
-    satellite: '' # Satellite fqdn
+    satellite: '' # Satellite FQDN
     satKey7: '' # Activation key for RHEL 7 servers
     satKey8: '' # Activation key for RHEL 8 servers
     satKey9: '' # Activation key for RHEL 9 servers
     satCDN_user: '' # customer portal account username if using the CDN to register and update the servers
     satCDN_passwd: '' # customer portal account pasword if using the CDN to register and update the servers
-
