@@ -137,11 +137,6 @@
   roles:
     - role: idm-hbac
   tags: hbac
-- name: Enable sudo on clients
-  hosts: ipaclients
-  roles:
-    - role: sudo-sssd
-  tags: sudo
 - name: Create IdM SUDO rules
   hosts: ipaserver
   become: false
