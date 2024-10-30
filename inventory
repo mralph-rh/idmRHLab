@@ -21,7 +21,7 @@ all:
   vars:
 # Global variables
     root_domain: "example.com" # Root domain (also used as Windows domain)
-    shortname: "demo9" # Sub-domain
+    shortname: "lab" # Sub-domain
     domain: "{{ shortname }}.{{ root_domain }}" # Full domain name
     third: "x" # Third octect of subnet used.
     idmpri_ip: 192.168.{{ third }}.xx
@@ -97,17 +97,6 @@ all:
     idm_host_group: "ipa_clients" # hostgroup name
 ## IdM Defaults
     idm_shell: "/bin/bash"
-# RHEL variables
-    network_connections:
-    - name: "{{ ansible_default_ipv4.alias }}"
-      state: up
-      type: ethernet
-      persistent_state: present
-      ip:
-        dhcp4: false
-        dns: "{{ idm_dns[0].idm_ip }}"
-        address: "{{ ansible_default_ipv4.address }}/24"
-        gateway4: "{{ ansible_default_ipv4.gateway }}"
 ## Crypto policy used: non-FIPS = DEFAULT, FIPS = FIPS, FIPS on RHEL 8 w/AD Trust = FIPS:AD-SUPPORT, FIPS on RHEL 9 w/AD Trust = FIPS:AD-SUPPORT-LEGACY
     crypto: "FIPS:AD-SUPPORT-LEGACY"
 ## Local user creation if needed
