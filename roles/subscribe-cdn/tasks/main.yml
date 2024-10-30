@@ -19,6 +19,11 @@
     name: rhel-8-for-x86_64-baseos-rpms,rhel-8-for-x86_64-appstream-rpms
     state: enabled
   when: ansible_facts['distribution_major_version'] == "8"
+- name: Enable RHEL 9 repositories
+  redhat.rhel_system_roles.rhsm_repository:
+    name: rhel-9-for-x86_64-baseos-rpms,rhel-9-for-x86_64-appstream-rpms
+    state: enabled
+  when: ansible_facts['distribution_major_version'] == "9"
 - name: Install Cockpit on RHEL 7
   ansible.builtin.package:
     name: cockpit

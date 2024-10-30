@@ -71,9 +71,11 @@ all:
     ipareplica_firewalld_zone: public
 ## IPA Client
     ipaclient_mkhomedir: true
+    ipaclient_configure_dns_resolver: true
+    ipaclient_dns_servers: "{{ idm_dns[0].idm_ip,idm_dns[1].idm_ip }}"
 ## IdM password variables, do not use same one for Prod/Dev. Same only for demo/POC
     ipaadmin_password: "{{ admin_password }}" # IdM admin password
-    ipadm_password: "{{ admin_password }}" # IdM directory manager password
+    ipadm_password: "{{ dm_password }}" # IdM directory manager password
     ipasmartcard_server_ca_certs: "/etc/ipa/ca.crt" # Used for enabling smartcards
 ## IdM User Creation
     idm_users: # IPA users
