@@ -23,6 +23,8 @@ The file is here: https://github.com/AlbanAndrieu/ansible-windows/blob/master/fi
 
 Earlier versions of Windows server might need to upgrade PowerShell and .NET Framework. You can find instructions here: https://docs.ansible.com/ansible/latest/os_guide/windows_winrm.html
 
+The Satellite registration role (subscribe-sat) is for Satellite 6.15 and below.
+
 Role Variables
 --------------
 
