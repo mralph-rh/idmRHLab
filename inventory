@@ -107,8 +107,13 @@ all:
 ## Satellite Info
     sat_ip: '' # Satellite IP
     satellite: '' # Satellite FQDN
-    satKey7: '' # Activation key for RHEL 7 servers
-    satKey8: '' # Activation key for RHEL 8 servers
-    satKey9: '' # Activation key for RHEL 9 servers
+  ## Satellite 6.15 and earlier
+    # satKey7: '' # Activation key for RHEL 7 servers
+    # satKey8: '' # Activation key for RHEL 8 servers
+    # satKey9: '' # Activation key for RHEL 9 servers
+  ## Satellite 6.16 and later host registeration
+    satKey7: "" # Activation key for RHEL 7 servers
+    satKey8: "" # Activation key for RHEL 8 servers
+    satKey9: "" # Activation key for RHEL 9 servers   
     satCDN_user: '' # customer portal account username if using the CDN to register and update the servers
     satCDN_passwd: '' # customer portal account pasword if using the CDN to register and update the servers

@@ -1,0 +1,28 @@
+---
+# tasks file for subscribe-sat for Satellite 6.16 and beyond using pre-generated registraion command
+- name: Add Satellite server IP
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: '{{ sat_ip }}  {{ satellite }}'
+    create: true
+- name: Register and update system for RHEL 7
+  when: ansible_facts['distribution_major_version'] == "7"
+  block:
+    - name: "Perform registration"
+      ansible.builtin.shell:
+        cmd: "{{ satKey7 }}"
+    - name: Install Cockpit on RHEL 7
+      ansible.builtin.package:
+        name: cockpit
+        state: present
+- name: Register and update system for RHEL 8
+  ansible.builtin.shell:
+    cmd: "{{ satKey8 }}"
+  when: ansible_facts['distribution_major_version'] == "8"
+- name: Register and update system for RHEL 9
+  ansible.builtin.shell:
+    cmd: "{{ satKey9 }}"
+  when: ansible_facts['distribution_major_version'] == "9"
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 120

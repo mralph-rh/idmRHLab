@@ -1,0 +1,44 @@
+---
+# tasks file for subscribe-sat, Satellite 6.15
+- name: Add Satellite server IP
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: '{{ sat_ip }}  {{ satellite }}'
+    create: true
+- name: Register and update to Satellite 6.15 and earlier
+  block:
+    - name: Install katello-ca for Satellite 6.15
+      ansible.builtin.dnf:
+        name: "http://{{ satellite }}/pub/katello-ca-consumer-latest.noarch.rpm"
+        disable_gpg_check: true
+        state: present
+    - name: Subscribe RHEL 7 servers
+      redhat.rhel_system_roles.redhat_subscription:
+        state: present
+        activationkey: '{{ satKey7 }}'
+        org_id: 'Red_Hat'
+      when: ansible_facts['distribution_major_version'] == "7"
+    - name: Install Cockpit on RHEL 7
+      ansible.builtin.package:
+        name: cockpit
+        state: present
+      when: ansible_facts['distribution_major_version'] == "7"
+    - name: Subscribe RHEL 8 servers
+      redhat.rhel_system_roles.redhat_subscription:
+        state: present
+        activationkey: '{{ satKey8 }}'
+        org_id: 'Red_Hat'
+      when: ansible_facts['distribution_major_version'] == "8"
+    - name: Subscribe RHEL 9 servers
+      redhat.rhel_system_roles.redhat_subscription:
+        state: present
+        activationkey: '{{ satKey9 }}'
+        org_id: 'Red_Hat'
+      when: ansible_facts['distribution_major_version'] == "9"
+    - name: Update to latest
+      ansible.builtin.package:
+        name: "*"
+        state: latest
+    - name: Reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 120

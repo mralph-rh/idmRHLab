@@ -31,9 +31,22 @@
 - name: Subscribe systems to local satellite
   hosts: all:!win
   become: true
-  roles:
-    - role: subscribe-sat # Registers RHEL systems to local Satellite
-  tags: sat
+  tasks:
+  - name: Using katello-ca 
+    ansible.builtin.import_tasks: roles/subscribe-sat/tasks/katello.yml
+    tags:
+      - katello
+      - never
+  - name: Using runtime generated registration command
+    ansible.builtin.import_tasks: roles/subscribe-sat/tasks/sat616-2.yml
+    tags:
+      - rtgrc
+      - never
+  - name: Using pre-generated registration command
+    ansible.builtin.import_tasks: roles/subscribe-sat/tasks/sat616-2.yml
+    tags: 
+      - pgrc
+      # - never
 # OS section
 - name: Add local linux users
   hosts: all:!win

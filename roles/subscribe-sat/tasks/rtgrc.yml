@@ -1,0 +1,70 @@
+---
+# tasks file for subscribe-sat, Satellite 6.16 and beyond using generated registraion command with 1 hr code
+- name: Add Satellite server IP
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: '{{ sat_ip }}  {{ satellite }}'
+    create: true
+- name: Register and update to Satellite 6.15 and earlier
+  block:
+    - name: Register and update system for RHEL 7
+      when: ansible_facts['distribution_major_version'] == "7"
+      block:
+        - name: "Generate registration command"
+          redhat.satellite.registration_command:
+            username: "admin"
+            password: "{{ admin_password }}"
+            server_url: "https://{{ satellite }}"
+            activation_keys: "{{ satKey7 }}"
+            insecure: true
+            jwt_expiration: 1
+            setup_remote_execution: true
+            update_packages: true
+            validate_certs: false
+          register: command
+        - name: "Perform registration"
+          ansible.builtin.shell:
+            cmd: "{{ command.registration_command }}"
+        - name: Install Cockpit on RHEL 7
+          ansible.builtin.package:
+            name: cockpit
+            state: present
+    - name: Register and update system for RHEL 8
+      when: ansible_facts['distribution_major_version'] == "8"
+      block:
+        - name: "Generate registration command"
+          redhat.satellite.registration_command:
+            username: "admin"
+            password: "{{ admin_password }}"
+            server_url: "https://{{ satellite }}"
+            activation_keys: "{{ satKey8 }}"
+            insecure: true
+            jwt_expiration: 1
+            setup_remote_execution: true
+            update_packages: true
+            validate_certs: false
+          register: command
+        - name: "Perform registration"
+          ansible.builtin.shell:
+            cmd: "{{ command.registration_command }}"
+    - name: Register and update system for RHEL 9
+      when: ansible_facts['distribution_major_version'] == "9"
+      block:
+        - name: "Generate registration command"
+          redhat.satellite.registration_command:
+            username: "admin"
+            password: "{{ admin_password }}"
+            server_url: "https://{{ satellite }}"
+            activation_keys: "{{ satKey9 }}"
+            insecure: true
+            jwt_expiration: 1
+            setup_remote_execution: true
+            update_packages: true
+            validate_certs: false
+          register: command
+        - name: "Perform registration"
+          ansible.builtin.shell:
+            cmd: "{{ command.registration_command }}"
+    - name: Reboot
+      ansible.builtin.reboot:
+      reboot_timeout: 120
