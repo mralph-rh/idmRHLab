@@ -23,7 +23,11 @@ The file is here: https://github.com/AlbanAndrieu/ansible-windows/blob/master/fi
 
 Earlier versions of Windows server might need to upgrade PowerShell and .NET Framework. You can find instructions here: https://docs.ansible.com/ansible/latest/os_guide/windows_winrm.html
 
-The Satellite registration role (subscribe-sat) is for Satellite 6.15 and below.
+NOTE:
+This playbook has been provided by Red Hat, but is outside the scope of the posted Service Level Agreements and support procedures (https://access.redhat.com/support/offerings/production/). 
+
+The information is provided as-is and any configuration settings or installed applications made from the information in this playbook could make the Operating System unsupported by Red Hat Global Support Services. The intent of this article is to provide information to accomplish the system's needs. Use of the information in this article at the user's own risk.
+
 
 Role Variables
 --------------
@@ -43,4 +47,4 @@ GPL-3.0
 Author Information
 ------------------
 
-Mike Ralph is a Senior Technical Account Manager for NAPS.
+Mike Ralph is a Principal Technical Account Manager for NAPS.
