@@ -37,7 +37,7 @@ All variables are listed in the inventory file.
 Dependencies
 ------------
 
-See Requirements.
+secret.yml will need to be updated with your secrets and encrypted. The password for your vault will need to be added to .passwordStore for decrypting secret.yml when the playbook is ran. Finally the .gitignore will need need to have the to be updated to not add secret.yml and .passwordStore added to your git repos.
 
 License
 -------
