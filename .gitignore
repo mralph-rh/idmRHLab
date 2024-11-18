@@ -1,2 +1,3 @@
-.passwordStore
-secret.yml
+## Remove this comment and uncomment the two below once you have configured them and re-encrypted secret.yml with your own key
+#.passwordStore
+#secret.yml
