@@ -117,3 +117,5 @@ all:
     satKey9: "" # Activation key for RHEL 9 servers   
     satCDN_user: '' # customer portal account username if using the CDN to register and update the servers
     satCDN_passwd: '' # customer portal account pasword if using the CDN to register and update the servers
+
+
